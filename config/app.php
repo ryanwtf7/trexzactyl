@@ -11,7 +11,7 @@ return [
     | change this value if you are not maintaining your own internal versions.
     */
 
-    'version' => env('APP_VERSION', '3.7.4'),
+    'version' => '1.0.0',
 
     /*
     |--------------------------------------------------------------------------
