@@ -1,0 +1,8 @@
+store_balance	int(10) unsigned	NO		NULL	
+store_cpu	int(10) unsigned	NO		NULL	
+store_memory	int(10) unsigned	NO		NULL	
+store_disk	int(10) unsigned	NO		NULL	
+store_slots	int(10) unsigned	NO		NULL	
+store_ports	int(10) unsigned	NO		NULL	
+store_backups	int(10) unsigned	NO		NULL	
+store_databases	int(10) unsigned	NO		NULL	

@@ -1,0 +1,220 @@
+/* Mobile Sidebar Fixes for Admin Panel */
+
+/* Header Layout Fix */
+.main-header {
+    display: flex;
+    align-items: center;
+    height: 60px;
+    background: transparent !important;
+    border-bottom: none !important;
+}
+
+.main-header .logo {
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    height: 60px;
+    background: transparent !important;
+    border-right: none !important;
+}
+
+.main-header .navbar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 60px;
+    margin: 0;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Content Header - Make title and description inline */
+.content-header {
+    padding-left: 20px !important;
+}
+
+.content-header h1 {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.content-header h1 small {
+    margin-left: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Mobile toggle button styling */
+.sidebar-toggle {
+    background-color: transparent;
+    background-image: none;
+    padding: 15px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+
+.sidebar-toggle .icon-bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background-color: #333;
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover .icon-bar {
+    background-color: #555;
+}
+
+/* Show toggle button on mobile */
+@media (max-width: 767px) {
+    .sidebar-toggle {
+        display: block !important;
+    }
+    
+    /* Hide sidebar by default on mobile */
+    .main-sidebar {
+        transform: translate(-230px, 0);
+        transition: transform 0.3s ease-in-out;
+    }
+    
+    /* Show sidebar when toggled */
+    .sidebar-open .main-sidebar {
+        transform: translate(0, 0);
+    }
+    
+    /* Add overlay when sidebar is open */
+    .sidebar-open:before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+    
+    .main-sidebar {
+        z-index: 1000;
+    }
+    
+    /* Adjust content wrapper for mobile */
+    .content-wrapper {
+        margin-left: 0 !important;
+    }
+    
+    /* Make header logo smaller on mobile */
+    .main-header .logo {
+        width: 50px;
+    }
+    
+    .main-header .logo img {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 991px) {
+    .sidebar-toggle {
+        display: block !important;
+    }
+    
+    .main-sidebar {
+        width: 60px;
+    }
+    
+    .content-wrapper {
+        margin-left: 60px !important;
+    }
+    
+    /* Hide menu text on tablets, show only icons */
+    .sidebar-menu li a span {
+        display: none;
+    }
+}
+
+/* Desktop - hide toggle button */
+@media (min-width: 992px) {
+    .sidebar-toggle {
+        display: none;
+    }
+}
+
+/* Sidebar menu improvements */
+.sidebar-menu li {
+    position: relative;
+}
+
+.sidebar-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu li a:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-menu li.active a {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-left: 3px solid #3c8dbc;
+}
+
+/* Icon styling */
+.sidebar-menu li a i {
+    margin-right: 10px;
+}
+
+/* Smooth transitions */
+.main-sidebar,
+.content-wrapper,
+.main-header {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Version display at bottom of sidebar */
+.sidebar-version {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 10px;
+    font-size: 12px;
+    color: #8aa4af;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 767px) {
+    .sidebar-version {
+        display: none;
+    }
+}
+
+/* Admin Store Page Text Visibility Fix */
+.box .box-body label,
+.box .box-body .control-label,
+.box .box-body input,
+.box .box-body select,
+.box .box-body .text-muted,
+.box .box-body p,
+.box .box-body small {
+    color: #333 !important;
+}
+
+.box .box-header h3,
+.box .box-header .box-title {
+    color: #333 !important;
+}
+
+.box {
+    background: #fff !important;
+}

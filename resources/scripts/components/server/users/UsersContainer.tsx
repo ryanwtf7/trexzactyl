@@ -1,0 +1,67 @@
+import tw from 'twin.macro';
+import { ApplicationStore } from '@/state';
+import Can from '@/components/elements/Can';
+import { httpErrorToHuman } from '@/api/http';
+import { ServerContext } from '@/state/server';
+import React, { useEffect, useState } from 'react';
+import Spinner from '@/components/elements/Spinner';
+import UserRow from '@/components/server/users/UserRow';
+import { Actions, useStoreActions, useStoreState } from 'easy-peasy';
+import getServerSubusers from '@/api/server/users/getServerSubusers';
+import AddSubuserButton from '@/components/server/users/AddSubuserButton';
+import ServerContentBlock from '@/components/elements/ServerContentBlock';
+import * as Icon from 'react-feather';
+
+export default () => {
+    const [loading, setLoading] = useState(true);
+    const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
+    const subusers = ServerContext.useStoreState((state) => state.subusers.data);
+    const setSubusers = ServerContext.useStoreActions((actions) => actions.subusers.setSubusers);
+    const permissions = useStoreState((state: ApplicationStore) => state.permissions.data);
+    const getPermissions = useStoreActions((actions: Actions<ApplicationStore>) => actions.permissions.getPermissions);
+    const { addError, clearFlashes } = useStoreActions((actions: Actions<ApplicationStore>) => actions.flashes);
+
+    useEffect(() => {
+        clearFlashes('users');
+        getServerSubusers(uuid)
+            .then((subusers) => {
+                setSubusers(subusers);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error(error);
+                addError({ key: 'users', message: httpErrorToHuman(error) });
+            });
+    }, []);
+
+    useEffect(() => {
+        getPermissions().catch((error) => {
+            addError({ key: 'users', message: httpErrorToHuman(error) });
+            console.error(error);
+        });
+    }, []);
+
+    if (!subusers.length && (loading || !Object.keys(permissions).length)) {
+        return <Spinner size={'large'} centered />;
+    }
+
+    return (
+        <ServerContentBlock title={'Users'}>
+            {!subusers.length ? (
+                <div
+                    css={tw`p-12 flex flex-col items-center justify-center text-neutral-500 bg-neutral-900 bg-opacity-40 backdrop-blur-xl rounded-sm border border-neutral-700`}
+                >
+                    <Icon.Users size={48} css={tw`mb-4 opacity-20`} />
+                    <p css={tw`text-sm`}>It looks like you don&apos;t have any subusers.</p>
+                </div>
+            ) : (
+                subusers.map((subuser) => <UserRow key={subuser.uuid} subuser={subuser} />)
+            )}
+            <Can action={'user.create'}>
+                <div css={tw`flex justify-end mt-8`}>
+                    <AddSubuserButton />
+                </div>
+            </Can>
+        </ServerContentBlock>
+    );
+};

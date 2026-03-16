@@ -1,0 +1,17 @@
+<?php
+
+namespace Trexzactyl\Listeners\Auth;
+
+use Trexzactyl\Facades\Activity;
+use Trexzactyl\Events\Auth\ProvidedAuthenticationToken;
+
+class TwoFactorListener
+{
+    public function handle(ProvidedAuthenticationToken $event): void
+    {
+        Activity::event($event->recovery ? 'auth:recovery-token' : 'auth:token')
+            ->withRequestMetadata()
+            ->subject($event->user)
+            ->log();
+    }
+}

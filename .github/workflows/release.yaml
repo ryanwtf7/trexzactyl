@@ -1,0 +1,103 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["Docker"]
+    types:
+      - completed
+    branches:
+      - "master"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-24.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Check version and existing tag
+        id: check_version
+        run: |
+          VERSION=$(jq -r .version package.json)
+          echo "Detected version: $VERSION"
+          if [ "$VERSION" == "null" ] || [ -z "$VERSION" ]; then
+            echo "Could not detect version from package.json"
+            exit 1
+          fi
+          
+          TAG="v$VERSION"
+          echo "Checking for tag: $TAG"
+          
+          git fetch --tags
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists. Skipping release."
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          else
+            echo "Tag $TAG does not exist. Proceeding with release."
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Node
+        if: steps.check_version.outputs.should_release == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        if: steps.check_version.outputs.should_release == 'true'
+        run: npm ci --legacy-peer-deps
+
+      - name: Build
+        if: steps.check_version.outputs.should_release == 'true'
+        run: npm run build
+
+      - name: Prepare Release Branch and Tag
+        if: steps.check_version.outputs.should_release == 'true'
+        env:
+          VERSION: ${{ steps.check_version.outputs.version }}
+          TAG: ${{ steps.check_version.outputs.tag }}
+        run: |
+          BRANCH="release/$TAG"
+          echo "Creating release branch: $BRANCH"
+          
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          git checkout -b $BRANCH
+          
+          # Bake version into app.php
+          sed -i "s/'version' => env('APP_VERSION', '3.7.4'),/'version' => '$VERSION',/" config/app.php
+          
+          git add config/app.php
+          git commit -m "Release $TAG"
+          git push -u origin $BRANCH
+          
+          # Create and push tag
+          git tag $TAG
+          git push origin $TAG
+
+      - name: Create release archive
+        if: steps.check_version.outputs.should_release == 'true'
+        run: |
+          rm -rf node_modules tests CODE_OF_CONDUCT.md CONTRIBUTING.md phpstan.neon phpunit.xml
+          tar -czf panel.tar.gz * .env.example .eslintignore .eslintrc.js .gitignore .prettierrc.json
+          sha256sum panel.tar.gz > checksum.txt
+
+      - name: Create Release
+        if: steps.check_version.outputs.should_release == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.check_version.outputs.tag }}
+          files: |
+            panel.tar.gz
+            checksum.txt
+          draft: false
+          prerelease: ${{ contains(steps.check_version.outputs.version, 'rc') || contains(steps.check_version.outputs.version, 'beta') || contains(steps.check_version.outputs.version, 'alpha') }}
